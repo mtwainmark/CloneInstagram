@@ -1,16 +1,66 @@
-import React from 'react';
+import React,{Component} from 'react';
 import User from './User';
+import InstaService from '../services/instaService';
+import ErrorMessage from './Error';
 
-export default function Users(){
-    return(
-        <div className="right">
-            <User src="https://images.unsplash.com/photo-1528900403525-dc523d4f18d6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80" alt="man" name="Jack"/>
-            <div className="users__block">
-            <User src="https://images.unsplash.com/photo-1528900403525-dc523d4f18d6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80" alt="man" name="Scott" min/>
-            <User src="https://images.unsplash.com/photo-1528900403525-dc523d4f18d6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80" alt="man" name="Nick" min/>
-            <User src="https://images.unsplash.com/photo-1528900403525-dc523d4f18d6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80" alt="man" name="Peter" min/>
-            <User src="https://images.unsplash.com/photo-1528900403525-dc523d4f18d6?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&w=1000&q=80" alt="man" name="John" min/>
+export default class Users extends Component{
+    InstaService = new InstaService();
+    state={
+        posts: [],
+        error: false
+    }
+    
+    componentDidMount(){
+        this.updatePosts();
+    }
+
+    updatePosts(){
+        this.InstaService.getAllPosts()
+        .then(this.onPostsLoaded)
+        .catch(this.onError);
+    }
+
+    onPostsLoaded = (posts) =>{
+        this.setState({
+            posts,
+            error: false
+        });
+    }
+
+    onError = () =>{
+        this.setState({
+            error: true
+        });
+    }
+
+    renderItems(arr){
+        return arr.map(item =>{
+            const {name, altname, photo} = item;
+            return (
+                <div className="right">
+                    <div className="users__block">
+                        <User src={photo} 
+                        alt={altname} 
+                        name={name}
+                        min/>
+                    </div>
+                </div>
+            )
+        });
+    }
+
+    render(){
+        const {error, posts} = this.state;
+        const items = this.renderItems(posts);
+
+        if(error){
+            return <ErrorMessage/>
+        }
+        
+        return(
+            <div className="right">
+                {items}
             </div>
-        </div>
-    )
+        )
+    }
 }
