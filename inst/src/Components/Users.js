@@ -1,66 +1,79 @@
-import React,{Component} from 'react';
+import React, { Component } from 'react'
 import User from './User';
 import InstaService from '../services/instaService';
 import ErrorMessage from './Error';
+import ID from '../utils/ID';
 
-export default class Users extends Component{
-    InstaService = new InstaService();
-    state={
-        posts: [],
+
+export default class Users extends Component {
+  InstaService = new InstaService();
+
+  state = {
+    users: [],
+    error: false
+  }
+
+  updateUsers() {
+    this.InstaService.getAllUsers()
+    .then(this.onUsersLoaded)
+    .catch(this.onError);
+  }
+
+  onUsersLoaded = (users) => {
+    this.setState(
+      {
+        users,
         error: false
-    }
-    
-    componentDidMount(){
-        this.updatePosts();
+      }      
+    );    
+  }
+
+  onError = (err) => {
+    this.setState(
+      {     
+        error: true
+      }
+    );
+  }
+
+  componentDidMount() {
+    this.updateUsers();
+  }
+
+  renderItems(arr) {
+    return arr.map(item => {      
+      return (
+        <User 
+          key={ID()}          
+          src={item.src}
+          alt={item.alt}
+          name={item.name}        
+          min={true}
+        />   
+      );     
+    });
+  }
+
+
+  render() {
+    const {error, users} = this.state;
+
+    if (error) {
+      return <ErrorMessage />
     }
 
-    updatePosts(){
-        this.InstaService.getAllPosts()
-        .then(this.onPostsLoaded)
-        .catch(this.onError);
-    }
-
-    onPostsLoaded = (posts) =>{
-        this.setState({
-            posts,
-            error: false
-        });
-    }
-
-    onError = () =>{
-        this.setState({
-            error: true
-        });
-    }
-
-    renderItems(arr){
-        return arr.map(item =>{
-            const {name, altname, photo} = item;
-            return (
-                <div className="right">
-                    <div className="users__block">
-                        <User src={photo} 
-                        alt={altname} 
-                        name={name}
-                        min/>
-                    </div>
-                </div>
-            )
-        });
-    }
-
-    render(){
-        const {error, posts} = this.state;
-        const items = this.renderItems(posts);
-
-        if(error){
-            return <ErrorMessage/>
-        }
-        
-        return(
-            <div className="right">
-                {items}
-            </div>
-        )
-    }
+    const renderedUsers = this.renderItems(users);
+    return (
+      <div className="right">
+        <User           
+          src="https://avatars3.githubusercontent.com/u/42296200?s=460&v=4"
+          alt="man"
+          name="github mtwainmark"          
+        />   
+        <div className="users__block">
+          {renderedUsers}    
+        </div>
+      </div>
+    )
+  }
 }
